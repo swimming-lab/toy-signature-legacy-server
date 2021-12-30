@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.github.bestheroz.main.web.admin.AdminDAO">
+    <select id="getMemberVOList" resultType="MemberVO" parameterType="AdminVO">
+        SELECT
+        mim.customer_id,
+        mim.bizco_nm,
+        mim.bizco_reg_no,
+        mim.name,
+        mim.nation_id_no,
+        mim.tel_no,
+        mim.zip_no,
+        mim.addr_office,
+        mim.addr_office_dtl,
+        mim.bank_cd,
+        mim.accont_no,
+        mim.app_password,
+        mim.member_password,
+        mim.member_st,
+        mim.reg_dt,
+        mim.reg_id,
+        mim.upd_dt,
+        mim.upd_id
+        FROM mbr_info_mst mim
+        <where>
+            and mim.reg_dt > DATE_ADD(now(), interval -#{range} month)
+            <if test="search != null and @org.apache.commons.lang3.StringUtils@isNotEmpty( search )">
+                AND MATCH (bizco_nm, name) AGAINST (CONCAT('*', #{search, jdbcType=VARCHAR}, '*') IN BOOLEAN MODE)
+            </if>
+        </where>
+        order by mim.customer_id desc
+        LIMIT #{offset}, #{limit}
+    </select>
+
+    <select id="getArrearsVOList" resultType="ArrearsVO" parameterType="AdminVO">
+        SELECT
+            marl.arrears_id,
+            marl.customer_id,
+            marl.arrears_nm,
+            marl.bizco_nm,
+            marl.bizco_reg_no,
+            marl.work_start_dy,
+            marl.work_end_dy,
+            marl.office_no,
+            marl.tel_no,
+            marl.add_tel_no,
+            marl.arrears_amt,
+            marl.work_nm,
+            marl.work_loc_nm,
+            marl.arrears_conts,
+            marl.proc_st,
+            marl.reg_dt,
+            marl.reg_id,
+            marl.upd_dt,
+            marl.upd_id
+        FROM mbr_arrears_lst marl
+        <where>
+            AND marl.reg_dt > DATE_ADD(now(), INTERVAL -#{range} MONTH)
+            <if test="search != null and @org.apache.commons.lang3.StringUtils@isNotEmpty( search )">
+                AND (
+                -- 체불 상호
+                marl.bizco_nm LIKE CONCAT('%', #{search, jdbcType=VARCHAR}, '%')
+                -- 체불 성명
+                OR marl.arrears_nm LIKE CONCAT('%', #{search, jdbcType=VARCHAR}, '%')
+                -- 체불 연락처
+                OR marl.tel_no LIKE CONCAT('%', #{search, jdbcType=VARCHAR}, '%')
+                -- 체불 추가 연락처
+                OR marl.add_tel_no LIKE CONCAT('%', #{search, jdbcType=VARCHAR}, '%')
+                )
+            </if>
+        </where>
+        ORDER BY marl.arrears_id DESC
+        LIMIT #{offset}, #{limit}
+    </select>
+</mapper>

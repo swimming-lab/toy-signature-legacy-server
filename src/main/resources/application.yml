@@ -1,0 +1,111 @@
+spring:
+  profiles:
+    active: local
+  http:
+    encoding:
+      charset: UTF-8
+      enabled: true
+      force: true
+    converters:
+      preferred-json-mapper: gson
+  resources:
+    chain:
+      compressed: true
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 20MB
+      max-request-size: 10MB
+      file-size-threshold: 0
+  mvc:
+    contentnegotiation:
+      favor-parameter: true
+      favor-path-extension: true
+      media-types:
+        xlsx: application/vnd.ms-excel
+
+  #thymeleaf:
+  #  view-names: thymeleaf/*
+  #  prefix: classpath:templates/
+  #  suffix: .html
+  #  cache: false
+  #  check-template-location: true
+mybatis:
+  mapper-locations: classpath:**/*Mapper.xml
+  type-aliases-super-type: java.io.Serializable
+  type-aliases-package: com.github.bestheroz
+  config-location: classpath:mybatis-config.xml
+server:
+  compression:
+    enabled: true
+  error:
+    path: /common/exception/error
+  http2:
+    enabled: true
+  servlet:
+    session:
+      cookie:
+        name: JSESSIONID_PROJECT
+        max-age: 86400
+        #max-age: 60
+        #max-age: 3600 # 1 hour
+#management:
+#  endpoint:
+#    shutdown:
+#      enabled: true
+#    health:
+#      enabled: true
+#  endpoints:
+#    enabled-by-default: false
+#    web:
+#      exposure:
+#        include: shutdown, health
+logging:
+  level:
+    org:
+      apache:
+        http: ERROR
+---
+spring:
+  profiles: local
+  datasource:
+  initialization-mode: always
+  #schema: classpath:/removabledb/h2.sql
+  schema: classpath:/removabledb/local.sql
+---
+#spring:
+#  profiles: local
+#  datasource:
+#    hikari:
+#      username: root
+#      password: root
+#      driver-class-name: org.jdbcdslog.DriverLoggingProxy
+#      jdbc-url: jdbc:jdbcdslog:mariadb://localhost:3306/signature?useUnicode=true&characterEncoding=utf-8&autoReconnect=true&&zeroDateTimeBehavior=convertToNull;targetDriver=org.mariadb.jdbc.Driver
+      #username: signaturewas
+      #password: pass@word1
+      #driver-class-name: org.jdbcdslog.DriverLoggingProxy
+      #jdbc-url: jdbc:jdbcdslog:mariadb://localhost:3306/signaturewas?useUnicode=true&characterEncoding=utf-8&autoReconnect=true&&zeroDateTimeBehavior=convertToNull;targetDriver=org.mariadb.jdbc.Driver
+server:
+  port: 8080
+---
+spring:
+  profiles: dev
+  datasource:
+    hikari:
+      username: example
+      password: example123
+      driver-class-name: org.jdbcdslog.DriverLoggingProxy
+      jdbc-url: jdbc:jdbcdslog:mysql://example.com:3306/example?useUnicode=true&characterEncoding=utf-8&autoReconnect=true&&zeroDateTimeBehavior=convertToNull;targetDriver=org.gjt.mm.mysql.Driver
+server:
+  port: 3401
+---
+spring:
+  profiles: prd
+  datasource:
+    hikari:
+      username: signaturewas
+      password: pass@word1
+      driver-class-name: org.jdbcdslog.DriverLoggingProxy
+      jdbc-url: jdbc:jdbcdslog:mariadb://localhost:3306/signaturewas?useUnicode=true&characterEncoding=utf-8&autoReconnect=true&&zeroDateTimeBehavior=convertToNull;targetDriver=org.mariadb.jdbc.Driver
+server:
+  port:

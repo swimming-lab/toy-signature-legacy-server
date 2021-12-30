@@ -1,0 +1,235 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.github.bestheroz.main.web.contract.ContractDAO">
+    <select id="searchHire" resultType="ContractVO" parameterType="ContractVO">
+        SELECT
+            mchl.contract_no,
+            mchl.contract_id,
+            mchl.customer_id,
+            mchl.bizco_nm,
+            mchl.bizco_reg_no,
+            mchl.name,
+            mchl.tel_no,
+            mchl.work_agent_nm,
+            mchl.work_agent_tel_no,
+            mchl.zip_no,
+            mchl.addr_office,
+            mchl.addr_office_dtl,
+            mcm.upd_dt,
+            mcm.work_nm
+        FROM
+            mbr_contract_hire_lst mchl use index(idx1_mbr_contract_hire_lst),
+            mbr_contract_mst mcm
+        <choose>
+            <when test="search != null and @org.apache.commons.lang3.StringUtils@isNotEmpty( search )">
+                <where>
+                AND mchl.customer_id = #{customerId}
+                AND mchl.contract_no = mcm.contract_no
+                AND (
+                    -- 임차인 상호명
+                    mchl.bizco_nm like CONCAT('%', #{search, jdbcType=VARCHAR}, '%')
+                    -- 현장대리인 이름
+                    OR mchl.work_agent_nm like CONCAT('%', #{search, jdbcType=VARCHAR}, '%')
+                )
+                </where>
+                ORDER BY mchl.contract_no DESC
+            </when>
+            <otherwise>
+                <where>
+                AND mchl.customer_id = #{customerId}
+                AND mchl.contract_no = mcm.contract_no
+                </where>
+                ORDER BY mchl.contract_no DESC
+            </otherwise>
+        </choose>
+    </select>
+
+    <select id="list" resultType="ContractVO" parameterType="ContractVO">
+        SELECT
+            mcm.contract_no,
+            mcm.contract_id,
+            mcm.customer_id,
+            mcm.equip_cd,
+            mcm.equip_model,
+            mcm.regist_no,
+            mcm.insurance_yn,
+            mcm.routine_yn,
+            mcm.work_nm,
+            mcm.work_loc_nm,
+            mcm.issuer_nm,
+            mcm.builder_nm,
+            mcm.work_dy,
+            mcm.work_start_time,
+            mcm.work_end_time,
+            mcm.use_amt,
+            mcm.work_conts,
+            mcm.payday_over_no,
+            mcm.payday_in_no,
+            mcm.agent_nm,
+            mcm.contract_st,
+            mcm.par_contract_id,
+            mcm.reg_dt,
+            mcm.reg_id,
+            mcm.upd_dt,
+            mcm.upd_id,
+            mchl.bizco_nm,
+            mchl.bizco_reg_no,
+            mchl.name,
+            mchl.tel_no,
+            mchl.work_agent_nm,
+            mchl.work_agent_tel_no,
+            cem.equip_nm
+        FROM
+            mbr_contract_mst mcm use index(idx1_mbr_contract_mst),
+            mbr_contract_hire_lst mchl,
+            com_equip_mst cem
+        <where>
+            AND mcm.customer_id = #{customerId}
+            AND mcm.equip_cd = cem.equip_cd
+            AND mcm.reg_dt > DATE_ADD(now(), interval -#{range} month)
+            AND mcm.contract_no = mchl.contract_no
+            and mcm.contract_st in (1,2)
+            <if test="search != null and @org.apache.commons.lang3.StringUtils@isNotEmpty( search )">
+                AND (
+                    -- 임차인명
+                    mchl.name like CONCAT('%', #{search, jdbcType=VARCHAR}, '%')
+                    -- 현장명
+                    OR mcm.work_nm like CONCAT('%', #{search, jdbcType=VARCHAR}, '%')
+                    -- 임차인 상호명
+                    OR mchl.bizco_nm like CONCAT('%', #{search, jdbcType=VARCHAR}, '%')
+                    -- 현장대리인 연락처
+                    OR mchl.work_agent_tel_no like CONCAT('%', #{search, jdbcType=VARCHAR}, '%')
+                )
+            </if>
+        </where>
+        ORDER BY mcm.contract_no DESC
+        LIMIT #{offset}, #{limit}
+    </select>
+
+    <select id="excelList" resultType="ContractVO" parameterType="ContractVO">
+        SELECT
+        mcm.contract_no,
+        mcm.contract_id,
+        mcm.customer_id,
+        mcm.equip_cd,
+        mcm.equip_model,
+        mcm.regist_no,
+        mcm.insurance_yn,
+        mcm.routine_yn,
+        mcm.work_nm,
+        mcm.work_loc_nm,
+        mcm.issuer_nm,
+        mcm.builder_nm,
+        mcm.work_dy,
+        mcm.work_start_time,
+        mcm.work_end_time,
+        mcm.use_amt,
+        mcm.work_conts,
+        mcm.payday_over_no,
+        mcm.payday_in_no,
+        mcm.agent_nm,
+        mcm.contract_st,
+        mcm.par_contract_id,
+        mcm.reg_dt,
+        mcm.reg_id,
+        mcm.upd_dt,
+        mcm.upd_id,
+        mchl.bizco_nm,
+        mchl.bizco_reg_no,
+        mchl.name,
+        mchl.tel_no,
+        mchl.work_agent_nm,
+        mchl.work_agent_tel_no,
+        cem.equip_nm
+        FROM
+        mbr_contract_mst mcm use index(idx1_mbr_contract_mst),
+        mbr_contract_hire_lst mchl,
+        com_equip_mst cem
+        <where>
+            AND mcm.customer_id = #{customerId}
+            AND mcm.equip_cd = cem.equip_cd
+            AND mcm.reg_dt > DATE_ADD(now(), interval -#{range} month)
+            AND mcm.contract_no = mchl.contract_no
+            and mcm.contract_st in (1,2)
+            <if test="search != null and @org.apache.commons.lang3.StringUtils@isNotEmpty( search )">
+                AND (
+                -- 임차인명
+                mchl.name like CONCAT('%', #{search, jdbcType=VARCHAR}, '%')
+                -- 현장명
+                OR mcm.work_nm like CONCAT('%', #{search, jdbcType=VARCHAR}, '%')
+                -- 임차인 상호명
+                OR mchl.bizco_nm like CONCAT('%', #{search, jdbcType=VARCHAR}, '%')
+                -- 현장대리인 연락처
+                OR mchl.work_agent_tel_no like CONCAT('%', #{search, jdbcType=VARCHAR}, '%')
+                )
+            </if>
+        </where>
+        ORDER BY mcm.contract_no DESC
+    </select>
+
+    <select id="info" resultType="ContractVO" parameterType="ContractVO">
+        SELECT
+            mcm.contract_no,
+            mcm.contract_id,
+            mcm.customer_id,
+            mcm.equip_cd,
+            mcm.equip_model,
+            mcm.regist_no,
+            mcm.insurance_yn,
+            mcm.routine_yn,
+            mcm.work_nm,
+            mcm.work_loc_nm,
+            mcm.issuer_nm,
+            mcm.builder_nm,
+            mcm.work_dy,
+            mcm.work_start_time,
+            mcm.work_end_time,
+            mcm.use_amt,
+            mcm.work_conts,
+            mcm.payday_over_no,
+            mcm.payday_in_no,
+            mcm.agent_nm,
+            mcm.contract_st,
+            mcm.par_contract_id,
+            mcm.reg_dt,
+            mcm.reg_id,
+            mcm.upd_dt,
+            mcm.upd_id,
+            mchl.bizco_nm,
+            mchl.bizco_reg_no,
+            mchl.name,
+            mchl.tel_no,
+            mchl.work_agent_nm,
+            mchl.work_agent_tel_no,
+            mchl.zip_no,
+            mchl.addr_office,
+            mchl.addr_office_dtl,
+            cem.equip_nm,
+            mcsl.signature
+        FROM
+            mbr_contract_mst mcm,
+            mbr_contract_hire_lst mchl,
+            mbr_contract_sign_lst mcsl,
+            com_equip_mst cem
+        <where>
+            and mcm.customer_id = #{customerId}
+            and mcm.contract_no = #{contractNo}
+            and mcm.contract_no = mchl.contract_no
+            and mcm.contract_no = mcsl.contract_no
+            and mcm.equip_cd = cem.equip_cd
+        </where>
+    </select>
+
+    <update id="contractDel" parameterType="Integer">
+        UPDATE mbr_contract_mst
+           set contract_st = 9
+         WHERE contract_no = #{contractNo}
+    </update>
+
+    <select id="selectVersion" resultType="String">
+        SELECT code_cd
+          FROM com_code_mst
+         WHERE grp_code_cd = 'APP_VERSION'
+    </select>
+</mapper>
